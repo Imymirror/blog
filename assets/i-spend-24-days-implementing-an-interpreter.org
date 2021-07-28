@@ -100,4 +100,3 @@ Pratt parser 一个核心思想是将 解析函数与 token type 相关联. 根�
 我通过邮件向书籍作者 Thorsten Ball 确认了这个问题. 具体解释如下:
 #+ATTR_ORG: :width 500 
 [[file:images/i-spend-24-days-implementing-an-interpreter/代码实现的小缺陷/20210728-120759_screenshot.png]]
-
