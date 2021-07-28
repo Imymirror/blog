@@ -1,3 +1,5 @@
 
+这是 imymirror 的个人博客. 
+
 * compiler
 ** [[file:assets/i-spend-24-days-implementing-an-interpreter.org][我花了 24 天使用 C++ 实现了一个解释器]]
