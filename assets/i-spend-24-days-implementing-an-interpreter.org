@@ -1,0 +1,103 @@
+* 前言
+自己动手实现一门编程语言从大学开始就是我的一个梦想, 即使和真正的商业语言相比只是一个玩具. 但是不妨碍我们通过重复造轮子的方式实现一门脚本语言来加深对编译原理相关知识的理解. 
+
+同时也要感谢 Thorsten Ball <Writing a Interpreter in Go> 这本书, 我通过对其 Golang 版本进行移植, 从零实现了一个 C++ 版本的脚本语言. 
+
+我实现的 C++ source code github : https://github.com/Imymirror/mirror-monkey
+* 流程图
+
+解释器的实现步骤:
+#+ATTR_ORG: :width 500 
+[[file:images/i-spend-24-days-implementing-an-interpreter/流程图/20210728-120626_screenshot.png]]
+
+数据结构的转换过程
+#+ATTR_ORG: :width 500 
+[[file:images/i-spend-24-days-implementing-an-interpreter/流程图/20210728-120655_screenshot.png]]
+
+* 实现的语言特性
+
+- C-like syntax
+- variable bindings
+- integers and booleans
+- arithmetic expressions
+- built-in functions
+- first-class and higher-order functions
+- closures
+- a string data structure
+- an array data structure
+- a hash data structure
+
+#+begin_src c
+let age = 1;
+let name = "Monkey";
+let result = 10 * (20 / 2);
+
+let myArray = [1, 2, 3, 4, 5];
+let thorsten = {"name": "Thorsten", "age": 28};
+
+myArray[0] // => 1
+thorsten["name"] // => "Thorsten"
+
+let add = fn(a, b) { return a + b; };
+let add = fn(a, b) { a + b; };
+add(1, 2);
+
+let fibonacci = fn(x) {
+  if (x == 0) {
+    0
+  } else {
+    if (x == 1) {
+      1
+    } else {
+      fibonacci(x - 1) + fibonacci(x - 2);
+    }
+  }
+};
+
+
+let twice = fn(f, x) {
+  return f(f(x));
+};
+
+let addTwo = fn(x) {
+  return x + 2;
+};
+twice(addTwo, 2); // => 6
+
+
+let map = fn(arr, f) {
+  let iter = fn(arr, accumulated) { 
+    if (len(arr) == 0) {
+      accumulated
+    } else {
+      iter(rest(arr), push(accumulated, f(first(arr))));
+    } 
+  };
+  iter(arr, []);
+};
+
+let a = [1, 2, 3, 4];
+let double = fn(x) { x * 2 }; 
+map(a, double);
+#+end_src
+
+* 实现细节
+** 是否使用 parser generators 
+Parser 的实现方案有两种:
+1. 手写
+2. 使用 parser generator 第三方工具自动生成, 比如 yacc, bison or ANTLR
+
+为了深入了解一个语言的实现细节, 我们采用了 方案1.
+** 手写 Parser 的策略选择
+Parser 主要有两种策略 : 自顶向下(top-down parsing), 自底向上(bottom-up parsing).
+
+我们选择实现的是一个递归下降的 parser, 并且是一个 自顶向下有运算符优先级的 parser, 有时也叫 "Pratt parser" (发明人 Vaughan Pratt).
+
+Pratt parser 一个核心思想是将 解析函数与 token type 相关联. 根据 token 的位置(中缀或者前缀), 每个 token type 可以有两个与其关联的解析函数.
+* 代码实现的小缺陷
+在实现类似 Lua 语言的 hash table 的特性(在其他语言可能叫做 字典)的过程中, 当 key 为 String 类型的时候没有解决 哈希碰撞 的问题.
+
+我通过邮件向书籍作者 Thorsten Ball 确认了这个问题. 具体解释如下:
+#+ATTR_ORG: :width 500 
+[[file:images/i-spend-24-days-implementing-an-interpreter/代码实现的小缺陷/20210728-120759_screenshot.png]]
+
